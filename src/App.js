@@ -1,24 +1,37 @@
-import logo from './logo.svg';
+import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { compose, createStore, applyMiddleware } from 'redux';
+import createSagaMiddleware from 'redux-saga';
+import { SnackbarProvider } from 'notistack';
 import './App.css';
+
+import reducers from './reducers';
+import watcherSaga from './sagas';
+import { Delegator } from './pages/Delegator';
+
+// create the saga middleware
+const sagaMiddleware = createSagaMiddleware();
+
+const reduxDevTools = window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__();
+
+const store = createStore(
+  reducers,
+  reduxDevTools ? compose(applyMiddleware(sagaMiddleware), reduxDevTools) : applyMiddleware(sagaMiddleware),
+);
+
+// run the saga
+sagaMiddleware.run(watcherSaga);
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Provider store={store}>
+      <Router>
+        <SnackbarProvider maxSnack={1}>
+          <Delegator />
+        </SnackbarProvider>
+      </Router>
+    </Provider>
   );
 }
 
